@@ -1,59 +1,75 @@
-import React, { useRef, useState } from "react";
-import JSZip from "jszip";
-import throttle from "lodash.throttle";
-import { saveAs } from "file-saver";
+import React, { useState } from 'react';
 
-export default function App() {
-  const inputRef = useRef(null);
-  const [progress, setProgress] = useState(-1);
-  const [files, setFiles] = useState([]);
+const App = () => {
+  const [selectedFolder, setSelectedFolder] = useState(null);
 
-  const onZipUpdate = (metadata) => {
-    setProgress(metadata.percent);
-    console.log("progression: " + metadata.percent.toFixed(2) + " %");
-    if (metadata.currentFile) {
-      console.log("current file = " + metadata.currentFile);
+  const handleFolderSelect = async () => {
+    try {
+      const directoryHandle = await window.showDirectoryPicker();
+      setSelectedFolder(directoryHandle);
+    } catch (error) {
+      console.error('An error occurred:', error);
     }
   };
-  const throttledZipUpdate = throttle(onZipUpdate, 50);
 
-  const onZip = () => {
-    const zip = new JSZip();
-    const files = Array.from(inputRef.current.files);
+  const handleUpload = async () => {
+    if (selectedFolder) {
+      var folderContent = {};
+      var directoryName="root";
+      let directoryContent=[];
+      const readEntries = async (directory) => {
+        const entries = await directory.values();
+        let entry = await entries.next();
+        while (!entry.done) {
+          if (entry.value.kind === 'file') {
+            directoryContent.push(entry.value);
+            folderContent[directoryName]=directoryContent;
+            console.log(folderContent);
+          } else if (entry.value.kind === 'directory') {
+            directoryName=entry.value.name;
+            if(directoryContent.length===0){
+              folderContent[directoryName]=[];
+            }
+            directoryContent=[];
+            await readEntries(entry.value);
+          }
+          entry = await entries.next();
+        }
+      };
+      readEntries(selectedFolder);
+      // Now you have the list of folder contents in the folderContents array
+      console.log('Folder contents:', [folderContent]);
 
-    files.forEach((file) => {
-      zip.file(file.webkitRelativePath, file);
-    });
-    zip
-      .generateAsync({ type: "blob" }, throttledZipUpdate)
-      .then(function (content) {
-        saveAs(content, "files.zip");
-
-        const formData = new FormData();
-        formData.append("folderzip", content);
-        console.log("ready to send to server", content);
-      })
-      .catch((e) => console.log(e));
+    // Continue with your upload logic
+    fetch('http://localhost:3000/upload-folder', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: [folderContent]
+})
+.then(response => response.json())
+.then(data => {
+  console.log(data);
+})
+.catch(error => {
+  console.error(error);
+});
+    }
   };
+
   return (
-    <div className="App">
-      <h1>Folder upload</h1>
-      <h2>Select a folder to send to the server</h2>
-      <input ref={inputRef} type="file" webkitdirectory="true" />
-      {files.length && (
+    <div>
+      <button onClick={handleFolderSelect}>Select Folder</button>
+      {selectedFolder && (
         <div>
-          <div>
-            <button onClick={onZip}>zip {files.length} files</button>
-          </div>
-          <progress max="100" value={progress}>
-            {progress?.toFixed(2)}%{" "}
-          </progress>
-          <h3>Selected Files</h3>
-          {files.map((file) => (
-            <div key={file.webkitRelativePath}>{file.webkitRelativePath}</div>
-          ))}
+          <p>Selected folder:</p>
+          <p>{selectedFolder.name}</p>
+          <button onClick={handleUpload}>Upload Folder</button>
         </div>
       )}
     </div>
   );
-}
+};
+
+export default App;
