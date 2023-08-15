@@ -9,14 +9,18 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "adm-zip": "^0.5.10",
+    "archiver": "^5.3.1",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "express-fileupload": "^1.4.0",
+    "extract-zip": "^2.0.1",
     "fs": "^0.0.1-security",
     "jszip": "^3.10.1",
     "multer": "^1.4.5-lts.1",
     "path": "^0.12.7",
-    "sharp": "^0.32.4"
+    "sharp": "^0.32.4",
+    "unzip": "^0.1.11"
   }
 }

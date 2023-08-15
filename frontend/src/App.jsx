@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import JSZip from "jszip";
 import throttle from "lodash.throttle";
 import { saveAs } from "file-saver";
-
+import axios from "axios";
 export default function App() {
   const inputRef = useRef(null);
   const [progress, setProgress] = useState(-1);
@@ -33,10 +33,10 @@ export default function App() {
       const response = await fetch("http://localhost:3000/upload", {
         method: "POST",
         body: formData,
-      });
+      })
 
-      if (response.ok) {
-        console.log("Zip file sent to the backend successfully.");
+      if (response) {
+        console.log(response.body);
       } else {
         console.error("Error sending zip file to the backend.");
       }
@@ -44,6 +44,29 @@ export default function App() {
       console.error("Error generating zip or sending to backend:", error);
     }
   };
+
+  const handleDownload = async () => {
+    try {
+        const response = await fetch('http://localhost:3000/download-zip', {
+            method: 'GET',
+        });
+
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'output.zip'; // Replace with the desired download filename
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } else {
+            console.error('Error downloading ZIP file:', response.statusText);
+        }
+    } catch (error) {
+        console.error('Error downloading ZIP file:', error);
+    }
+};
+  
 
   return (
     <div className="App">
@@ -62,6 +85,7 @@ export default function App() {
             <div key={file.webkitRelativePath}>{file.webkitRelativePath}</div>
           ))}
         </div>
+        <button onClick={handleDownload}>Download</button>
     </div>
   );
 }
