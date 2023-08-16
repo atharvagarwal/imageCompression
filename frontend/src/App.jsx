@@ -53,20 +53,18 @@ export default function App() {
         // Send a POST request to initiate cleanup
         const response = await fetch('http://localhost:3000/cleanup', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
         });
 
         if (response.ok) {
             const data = await response.json();
+            console.log(data);
             alert("Downloaded and cleaned up successfully"); // Assuming your backend sends a message upon success
         } else {
             alert("Downloaded and cleaned up failed"); // Assuming your backend sends a message upon
         }
     } catch (error) {
         console.error('An error occurred:', error);
-        setMessage('An error occurred during cleanup initiation.');
+        alert("Downloaded and cleaned up failed");
     }
 };
 

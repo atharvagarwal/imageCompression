@@ -227,10 +227,10 @@ app.post('/cleanup', async (req, res) => {
       await fsP.rmdir(path.join(__dirname, 'uploads'), { recursive: true });
 
       console.log('Cleanup completed successfully.');
-      res.sendStatus(200);
+      res.status(200).send({message: 'Cleanup completed successfully'});
   } catch (error) {
       console.error('An error occurred during cleanup:', error);
-      res.status(500).send('Cleanup failed.');
+      res.status(500).send({message: 'Cleanup failed'});
   }
 });
 
