@@ -4,7 +4,8 @@ const app = express();
 const path = require("path");
 const PORT = 3000;
 const cors = require("cors");
-const fs = require("fs");
+const fs = require('fs')
+const fsP = require('fs').promises;
 const sharp = require("sharp");
 const AdmZip = require("adm-zip");
 const archiver = require("archiver");
@@ -179,8 +180,10 @@ async function archiveFile() {
 
   archive.finalize();
 }
+
+
 //http endpoints
-app.get("/download-zip", (req, res) => {
+app.get("/download-zip", async(req, res) => {
   const zipFilePath = path.join(__dirname, "output.zip");
   const zipFileStream = fs.createReadStream(zipFilePath);
 
@@ -211,6 +214,24 @@ app.post("/upload", upload.single("zipFile"), async(req, res) => {
   res
     .status(200)
     .json({ message: "Zip file uploaded and stored successfully." });
+});
+
+app.post('/cleanup', async (req, res) => {
+  try {
+      // Delete the output.zip file
+      await fsP.unlink(path.join(__dirname, 'output.zip'));
+
+      // Delete the outputFolder, inputFolder, and uploads folders
+      await fsP.rmdir(path.join(__dirname, 'outputDirectory'), { recursive: true });
+      await fsP.rmdir(path.join(__dirname, 'inputDirectory'), { recursive: true });
+      await fsP.rmdir(path.join(__dirname, 'uploads'), { recursive: true });
+
+      console.log('Cleanup completed successfully.');
+      res.sendStatus(200);
+  } catch (error) {
+      console.error('An error occurred during cleanup:', error);
+      res.status(500).send('Cleanup failed.');
+  }
 });
 
 app.listen(PORT, () => {

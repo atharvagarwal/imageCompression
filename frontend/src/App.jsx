@@ -45,6 +45,31 @@ export default function App() {
     }
   };
 
+  const handleCleanup = async () => {
+    try {
+        // Trigger the download (replace with your download logic)
+        // ...
+
+        // Send a POST request to initiate cleanup
+        const response = await fetch('http://localhost:3000/cleanup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            alert("Downloaded and cleaned up successfully"); // Assuming your backend sends a message upon success
+        } else {
+            alert("Downloaded and cleaned up failed"); // Assuming your backend sends a message upon
+        }
+    } catch (error) {
+        console.error('An error occurred:', error);
+        setMessage('An error occurred during cleanup initiation.');
+    }
+};
+
   const handleDownload = async () => {
     try {
         const response = await fetch('http://localhost:3000/download-zip', {
@@ -59,6 +84,8 @@ export default function App() {
             a.download = 'output.zip'; // Replace with the desired download filename
             a.click();
             window.URL.revokeObjectURL(url);
+            handleCleanup();
+       
         } else {
             console.error('Error downloading ZIP file:', response.statusText);
         }
