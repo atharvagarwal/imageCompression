@@ -4,8 +4,8 @@ const app = express();
 const path = require("path");
 const PORT = 3000;
 const cors = require("cors");
-const fs = require('fs')
-const fsP = require('fs').promises;
+const fs = require("fs");
+const fsPromises = require("fs").promises;
 const sharp = require("sharp");
 const AdmZip = require("adm-zip");
 const archiver = require("archiver");
@@ -111,7 +111,6 @@ if (!fs.existsSync(outputDirectory)) {
   fs.mkdirSync(outputDirectory);
 }
 
-
 //extract zip file from uploads into our inputDirectory
 async function extractZipFile() {
   const uploadsFolder = "uploads";
@@ -181,9 +180,8 @@ async function archiveFile() {
   archive.finalize();
 }
 
-
 //http endpoints
-app.get("/download-zip", async(req, res) => {
+app.get("/download-zip", async (req, res) => {
   const zipFilePath = path.join(__dirname, "output.zip");
   const zipFileStream = fs.createReadStream(zipFilePath);
 
@@ -193,7 +191,7 @@ app.get("/download-zip", async(req, res) => {
   zipFileStream.pipe(res);
 });
 
-app.post("/upload", upload.single("zipFile"), async(req, res) => {
+app.post("/upload", upload.single("zipFile"), async (req, res) => {
   const uploadedZipFile = req.file;
 
   if (!uploadedZipFile) {
@@ -210,30 +208,107 @@ app.post("/upload", upload.single("zipFile"), async(req, res) => {
 
   extractZipFile();
   await processFilesRecursively(inputDirectory, outputDirectory, maxWidth);
-  await archiveFile()
+  await archiveFile();
   res
     .status(200)
     .json({ message: "Zip file uploaded and stored successfully." });
 });
 
-app.post('/cleanup', async (req, res) => {
+const FORCE_CLEANUP = true; // Set to true to force cleanup even with permission errors
+
+app.post("/cleanup", async (req, res) => {
   try {
-      // Delete the output.zip file
-      await fsP.unlink(path.join(__dirname, 'output.zip'));
+    const cleanupTasks = [];
 
-      // Delete the outputFolder, inputFolder, and uploads folders
-      await fsP.rmdir(path.join(__dirname, 'outputDirectory'), { recursive: true });
-      await fsP.rmdir(path.join(__dirname, 'inputDirectory'), { recursive: true });
-      await fsP.rmdir(path.join(__dirname, 'uploads'), { recursive: true });
+    // Check if output.zip exists and delete it
+    const outputZipPath = path.join(__dirname, "output.zip");
+    if (await fileExists(outputZipPath)) {
+      cleanupTasks.push(deleteFile(outputZipPath));
+    }
 
-      console.log('Cleanup completed successfully.');
-      res.status(200).send({message: 'Cleanup completed successfully'});
+    // Check if inputFolder exists and delete it
+    const inputDirectoryPath = path.join(__dirname, "inputDirectory");
+    if (await directoryExists(inputDirectoryPath)) {
+      cleanupTasks.push(deleteDirectoryRecursive(inputDirectoryPath));
+    }
+
+    // Check if outputFolder exists and delete it
+    const outputDirectoryPath = path.join(__dirname, "outputDirectory");
+    if (await directoryExists(outputDirectoryPath)) {
+      cleanupTasks.push(deleteDirectoryRecursive(outputDirectoryPath));
+    }
+
+    // Check if uploads folder exists and delete it
+    const uploadsDirectoryPath = path.join(__dirname, "uploads");
+    if (await directoryExists(uploadsDirectoryPath)) {
+      cleanupTasks.push(deleteDirectoryRecursive(uploadsDirectoryPath));
+    }
+
+    // Wait for all cleanup tasks to complete
+    await Promise.all(cleanupTasks);
+
+    console.log("Cleanup completed successfully.");
+    res.status(200).send({ message: "Cleanup completed successfully" });
   } catch (error) {
-      console.error('An error occurred during cleanup:', error);
-      res.status(500).send({message: 'Cleanup failed'});
+    console.error("An error occurred during cleanup:", error);
+    res.status(500).send({ message: "Cleanup failed" });
   }
 });
 
+async function fileExists(filePath) {
+  try {
+    await fsPromises.access(filePath);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+async function directoryExists(dirPath) {
+  try {
+    const stats = await fsPromises.stat(dirPath);
+    return stats.isDirectory();
+  } catch (error) {
+    return false;
+  }
+}
+
+async function deleteFile(filePath) {
+  try {
+    if (FORCE_CLEANUP) {
+      await fsPromises.unlink(filePath);
+    } else {
+      console.log("Permission denied to delete file:", filePath);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function deleteDirectoryRecursive(directoryPath) {
+  try {
+    const items = await fsPromises.readdir(directoryPath);
+
+    for (const item of items) {
+      const itemPath = path.join(directoryPath, item);
+      const itemStats = await fsPromises.stat(itemPath);
+
+      if (itemStats.isDirectory()) {
+        await deleteDirectoryRecursive(itemPath);
+      } else {
+        await deleteFile(itemPath);
+      }
+    }
+
+    if (FORCE_CLEANUP) {
+      await fsPromises.rmdir(directoryPath);
+    } else {
+      console.log("Permission denied to delete directory:", directoryPath);
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+}
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

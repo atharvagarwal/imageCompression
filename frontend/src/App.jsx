@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import JSZip from "jszip";
 import throttle from "lodash.throttle";
 import { saveAs } from "file-saver";
@@ -7,6 +7,9 @@ export default function App() {
   const inputRef = useRef(null);
   const [progress, setProgress] = useState(-1);
   const [files, setFiles] = useState([]);
+  useEffect(() => {
+    handleCleanup();
+  }, []);
 
   const onZipUpdate = (metadata) => {
     setProgress(metadata.percent);
@@ -26,17 +29,21 @@ export default function App() {
     });
 
     try {
-      const zipContent = await zip.generateAsync({ type: "blob" }, throttledZipUpdate);
+      const zipContent = await zip.generateAsync(
+        { type: "blob" },
+        throttledZipUpdate
+      );
       const formData = new FormData();
-      formData.append("zipFile", zipContent,"images.zip");
+      formData.append("zipFile", zipContent, "images.zip");
 
       const response = await fetch("http://localhost:3000/upload", {
         method: "POST",
         body: formData,
-      })
+      });
 
-      if (response) {
-        console.log(response.body);
+      if (response.ok) {
+        const data = await response.json();
+        alert("files Uploaded");
       } else {
         console.error("Error sending zip file to the backend.");
       }
@@ -47,70 +54,96 @@ export default function App() {
 
   const handleCleanup = async () => {
     try {
-        // Trigger the download (replace with your download logic)
-        // ...
+      // Trigger the download (replace with your download logic)
+      // ...
 
-        // Send a POST request to initiate cleanup
-        const response = await fetch('http://localhost:3000/cleanup', {
-            method: 'POST',
-        });
+      // Send a POST request to initiate cleanup
+      const response = await fetch("http://localhost:3000/cleanup", {
+        method: "POST",
+      });
 
-        if (response.ok) {
-            const data = await response.json();
-            console.log(data);
-            alert("Downloaded and cleaned up successfully"); // Assuming your backend sends a message upon success
-        } else {
-            alert("Downloaded and cleaned up failed"); // Assuming your backend sends a message upon
-        }
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data);
+      } else {
+        console.log("not cleaned");
+      }
     } catch (error) {
-        console.error('An error occurred:', error);
-        alert("Downloaded and cleaned up failed");
+      console.error("An error occurred:", error);
     }
-};
+  };
 
   const handleDownload = async () => {
     try {
-        const response = await fetch('http://localhost:3000/download-zip', {
-            method: 'GET',
-        });
+      const response = await fetch("http://localhost:3000/download-zip", {
+        method: "GET",
+      });
 
-        if (response.ok) {
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'output.zip'; // Replace with the desired download filename
-            a.click();
-            window.URL.revokeObjectURL(url);
-            handleCleanup();
-       
-        } else {
-            console.error('Error downloading ZIP file:', response.statusText);
-        }
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "output.zip"; // Replace with the desired download filename
+        a.click();
+        window.URL.revokeObjectURL(url);
+        handleCleanup();
+      } else {
+        console.error("Error downloading ZIP file:", response.statusText);
+      }
     } catch (error) {
-        console.error('Error downloading ZIP file:', error);
+      console.error("Error downloading ZIP file:", error);
     }
-};
-  
+  };
 
   return (
     <div className="App">
-      <h1>Folder upload</h1>
-      <h2>Select a folder to send to the server</h2>
-      <input ref={inputRef} type="file" webkitdirectory="true" />
-        <div>
+      <h1 className="text-3xl font-extrabold text-center p-6">
+        Multi Folder Image Compression System
+      </h1>
+      <div className=" flex justify-center gap-16 mt-6 px-10">
+        <div className="border-2 rounded-xl p-6 bg-gray-100 lg:w-1/4 md:w-1/2 sm:w-full sm:m-6">
+          <h2 className="text-xl font-bold  m-2 text-red-700">
+            Select a folder to send to the server*
+          </h2>
+
+          <input
+            className="text-md font-bold  m-2 text-green-700"
+            ref={inputRef}
+            type="file"
+            webkitdirectory="true"
+          />
           <div>
-            <button onClick={onZipAndSend}>zip and send {files.length} files</button>
+            <div>
+              <button
+                className="text-md font-bold m-2  bg-transparent hover:bg-blue-500 text-blue-700 hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
+                onClick={onZipAndSend}
+              >
+                zip and send {files.length} files
+              </button>
+            </div>
+            {files.map((file) => (
+              <div key={file.webkitRelativePath}>{file.webkitRelativePath}</div>
+            ))}
           </div>
-          <progress max="100" value={progress}>
-            {progress?.toFixed(2)}%{" "}
-          </progress>
-          <h3>Selected Files</h3>
-          {files.map((file) => (
-            <div key={file.webkitRelativePath}>{file.webkitRelativePath}</div>
-          ))}
+          <button
+            onClick={handleDownload}
+            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center m-2"
+          >
+            <svg
+              className="fill-current w-4 h-4 mr-2"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+            >
+              <path d="M13 8V2H7v6H2l8 8 8-8h-5zM0 18h20v2H0v-2z" />
+            </svg>
+            <span>Download</span>
+          </button>
         </div>
-        <button onClick={handleDownload}>Download</button>
+        <div className="hidden md:inline w-1/2">
+          <img src="frontImage.png" alt="main-image"></img>
+        </div>
+      </div>
     </div>
   );
 }
