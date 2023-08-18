@@ -7,6 +7,7 @@ export default function App() {
   const inputRef = useRef(null);
   const [progress, setProgress] = useState(-1);
   const [files, setFiles] = useState([]);
+  const [downloadBtn,useDownload] = useState(false)
   useEffect(() => {
     handleCleanup();
   }, []);
@@ -44,6 +45,7 @@ export default function App() {
       if (response.ok) {
         const data = await response.json();
         alert("files Uploaded");
+        useDownload(true)
       } else {
         console.error("Error sending zip file to the backend.");
       }
@@ -88,6 +90,7 @@ export default function App() {
         a.click();
         window.URL.revokeObjectURL(url);
         handleCleanup();
+        useDownload(false);
       } else {
         console.error("Error downloading ZIP file:", response.statusText);
       }
@@ -119,14 +122,14 @@ export default function App() {
                 className="text-md font-bold m-2  bg-transparent hover:bg-blue-500 text-blue-700 hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
                 onClick={onZipAndSend}
               >
-                zip and send {files.length} files
+                zip and send files
               </button>
             </div>
             {files.map((file) => (
               <div key={file.webkitRelativePath}>{file.webkitRelativePath}</div>
             ))}
           </div>
-          <button
+          {downloadBtn?<button
             onClick={handleDownload}
             className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center m-2"
           >
@@ -137,8 +140,22 @@ export default function App() {
             >
               <path d="M13 8V2H7v6H2l8 8 8-8h-5zM0 18h20v2H0v-2z" />
             </svg>
-            <span>Download</span>
-          </button>
+            <span>Download (Enabled)</span>
+          </button>:<button
+            onClick={handleDownload}
+            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center m-2"
+            disabled
+          >
+            <svg
+              className="fill-current w-4 h-4 mr-2"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+            >
+              <path d="M13 8V2H7v6H2l8 8 8-8h-5zM0 18h20v2H0v-2z" />
+            </svg>
+            <span>Download (Disabled)</span>
+          </button>}
+          
         </div>
         <div className="hidden md:inline w-1/2">
           <img src="frontImage.png" alt="main-image"></img>
