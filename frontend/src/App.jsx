@@ -1,17 +1,17 @@
 import React, { useRef, useState, useEffect } from "react";
 import JSZip from "jszip";
 import throttle from "lodash.throttle";
-import { saveAs } from "file-saver";
-import axios from "axios";
 export default function App() {
   const inputRef = useRef(null);
   const [progress, setProgress] = useState(-1);
   const [files, setFiles] = useState([]);
-  const [downloadBtn,useDownload] = useState(false)
+  const [downloadBtn, useDownload] = useState(false);
   useEffect(() => {
+    //every time we refresh the page it tends to clean up the dirty files present on the backend.
     handleCleanup();
   }, []);
 
+  //it is used to update the zip file with the contents
   const onZipUpdate = (metadata) => {
     setProgress(metadata.percent);
     console.log("progression: " + metadata.percent.toFixed(2) + " %");
@@ -20,7 +20,7 @@ export default function App() {
     }
   };
   const throttledZipUpdate = throttle(onZipUpdate, 50);
-
+  //it is used to initiate the zip file and send it to the server;
   const onZipAndSend = async () => {
     const zip = new JSZip();
     const files = Array.from(inputRef.current.files);
@@ -45,7 +45,7 @@ export default function App() {
       if (response.ok) {
         const data = await response.json();
         alert("files Uploaded");
-        useDownload(true)
+        useDownload(true);
       } else {
         console.error("Error sending zip file to the backend.");
       }
@@ -54,11 +54,9 @@ export default function App() {
     }
   };
 
+  //every time we refresh the page it tends to clean up the dirty files present on the backend.
   const handleCleanup = async () => {
     try {
-      // Trigger the download (replace with your download logic)
-      // ...
-
       // Send a POST request to initiate cleanup
       const response = await fetch("http://localhost:3000/cleanup", {
         method: "POST",
@@ -74,7 +72,7 @@ export default function App() {
       console.error("An error occurred:", error);
     }
   };
-
+  //once our files are processed we can download it using this function.
   const handleDownload = async () => {
     try {
       const response = await fetch("http://localhost:3000/download-zip", {
@@ -129,33 +127,36 @@ export default function App() {
               <div key={file.webkitRelativePath}>{file.webkitRelativePath}</div>
             ))}
           </div>
-          {downloadBtn?<button
-            onClick={handleDownload}
-            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center m-2"
-          >
-            <svg
-              className="fill-current w-4 h-4 mr-2"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
+          {downloadBtn ? (
+            <button
+              onClick={handleDownload}
+              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center m-2"
             >
-              <path d="M13 8V2H7v6H2l8 8 8-8h-5zM0 18h20v2H0v-2z" />
-            </svg>
-            <span>Download (Enabled)</span>
-          </button>:<button
-            onClick={handleDownload}
-            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center m-2"
-            disabled
-          >
-            <svg
-              className="fill-current w-4 h-4 mr-2"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
+              <svg
+                className="fill-current w-4 h-4 mr-2"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+              >
+                <path d="M13 8V2H7v6H2l8 8 8-8h-5zM0 18h20v2H0v-2z" />
+              </svg>
+              <span>Download (Enabled)</span>
+            </button>
+          ) : (
+            <button
+              onClick={handleDownload}
+              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center m-2"
+              disabled
             >
-              <path d="M13 8V2H7v6H2l8 8 8-8h-5zM0 18h20v2H0v-2z" />
-            </svg>
-            <span>Download (Disabled)</span>
-          </button>}
-          
+              <svg
+                className="fill-current w-4 h-4 mr-2"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+              >
+                <path d="M13 8V2H7v6H2l8 8 8-8h-5zM0 18h20v2H0v-2z" />
+              </svg>
+              <span>Download (Disabled)</span>
+            </button>
+          )}
         </div>
         <div className="hidden md:inline w-1/2">
           <img src="frontImage.png" alt="main-image"></img>

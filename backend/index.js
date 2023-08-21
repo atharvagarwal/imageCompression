@@ -1,103 +1,27 @@
+//import packages
 const express = require("express");
 const multer = require("multer");
 const app = express();
 const path = require("path");
-const PORT = 3000;
 const cors = require("cors");
 const fs = require("fs");
-const fsPromises = require("fs").promises;
-const sharp = require("sharp");
-const AdmZip = require("adm-zip");
-const archiver = require("archiver");
+const PORT = 3000;
+//middlewares or custom script/function imports
+const { archiveFile, extractZipFile } = require("./middlewares/zip.js");
+const { processFilesRecursively } = require("./middlewares/compression.js");
+const {
+  fileExists,
+  directoryExists,
+  deleteFile,
+  deleteDirectoryRecursive,
+} = require("./middlewares/cleanup.js");
+
+//middlewares express
 app.use(cors());
+app.use(express.json());
+//multer middleware
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
-app.use(express.json());
-
-//Compression Script
-const compressAndResizeImage = async (inputPath, outputPath, maxWidth) => {
-  try {
-    // Read the input image file
-    const inputBuffer = await fs.promises.readFile(inputPath);
-
-    // Get the size of the original image in kilobytes (KB)
-    const inputSize = (Buffer.byteLength(inputBuffer) / 1024).toFixed(2);
-    // Get the dimensions of the input image
-    const inputMetadata = await sharp(inputBuffer).metadata();
-    const { width: originalWidth, height: originalHeight } = inputMetadata;
-
-    let scaleFactor = 1;
-    if (originalWidth >= originalHeight) {
-      scaleFactor = (maxWidth / originalWidth).toPrecision(4);
-    } else {
-      scaleFactor = (maxWidth / originalHeight).toPrecision(4);
-    }
-
-    scaleFactor = Math.min(scaleFactor, 0.75);
-    const width = Math.floor(originalWidth * scaleFactor);
-    const height = Math.floor(originalHeight * scaleFactor);
-
-    let compressedResizedBuffer = await sharp(inputBuffer)
-      .resize({ width, height })
-      .jpeg({ quality: 90 })
-      .toBuffer();
-
-    // Get the size of the resized image in kilobytes (KB)
-    let outputSize = (
-      Buffer.byteLength(compressedResizedBuffer) / 1024
-    ).toFixed(2);
-    // Write the compressed and resized image to the output file
-    await fs.promises.mkdir(path.dirname(outputPath), { recursive: true });
-    if (parseInt(inputSize) <= parseInt(outputSize)) {
-      await fs.promises.writeFile(outputPath, inputBuffer);
-    } else {
-      await fs.promises.writeFile(outputPath, compressedResizedBuffer);
-    }
-    console.log(`Image compression and resizing successful for ${inputPath}`);
-    console.log(`initial size: ${inputSize} KB`);
-    console.log(
-      `Resized Size: ${
-        parseInt(inputSize) > parseInt(outputSize) ? outputSize : inputSize
-      } KB`
-    );
-  } catch (error) {
-    console.error(
-      `An error occurred during image compression and resizing for ${inputPath}:`,
-      error
-    );
-  }
-};
-
-// Function to recursively process files in a directory
-const processFilesRecursively = async (
-  inputDirectory,
-  outputDirectory,
-  maxWidth
-) => {
-  try {
-    const files = await fs.promises.readdir(inputDirectory);
-
-    for (const file of files) {
-      const inputPath = path.join(inputDirectory, file);
-      const outputPath = path.join(outputDirectory, file);
-
-      const stats = await fs.promises.stat(inputPath);
-      if (stats.isDirectory()) {
-        // Create a subdirectory in the output directory
-        const subOutputDirectory = path.join(outputDirectory, file);
-        await fs.promises.mkdir(subOutputDirectory, { recursive: true });
-
-        // Recursively process files in the subdirectory
-        await processFilesRecursively(inputPath, subOutputDirectory, maxWidth);
-      } else {
-        // Compress and resize the image
-        await compressAndResizeImage(inputPath, outputPath, maxWidth);
-      }
-    }
-  } catch (error) {
-    console.error("An error occurred while processing files:", error);
-  }
-};
 
 // Specify the input and output directories
 const inputDirectory = "inputDirectory";
@@ -111,76 +35,9 @@ if (!fs.existsSync(outputDirectory)) {
   fs.mkdirSync(outputDirectory);
 }
 
-//extract zip file from uploads into our inputDirectory
-async function extractZipFile() {
-  const uploadsFolder = "uploads";
-  const inputDirectory = "inputDirectory";
-
-  // Check if inputDirectory exists, if not, create it
-  if (!fs.existsSync(inputDirectory)) {
-    fs.mkdirSync(inputDirectory);
-  }
-
-  // List all files in the uploads folder
-  const uploadedFiles = fs.readdirSync(uploadsFolder);
-
-  uploadedFiles.forEach((file) => {
-    if (file.endsWith(".zip")) {
-      const zipPath = path.join(uploadsFolder, file);
-
-      // Create a subdirectory in inputDirectory with the same name as the zip file (without extension)
-      const subdirectoryName = path.parse(file).name;
-      const subdirectoryPath = path.join(inputDirectory, subdirectoryName);
-      fs.mkdirSync(subdirectoryPath, { recursive: true });
-
-      // Extract the zip file to the subdirectory
-      const zip = new AdmZip(zipPath);
-      zip.extractAllTo(subdirectoryPath, true);
-
-      console.log(`Extracted ${file} to ${subdirectoryPath}.`);
-    }
-  });
-}
-
-//code to convert the processed file into zip
-async function archiveFile() {
-  const sourceFolder = "outputDirectory"; // Replace with the path of the source folder
-  const outputZipFile = "output.zip"; // Replace with the desired name of the output ZIP file
-  const output = fs.createWriteStream(outputZipFile);
-  const archive = archiver("zip", { zlib: { level: 9 } });
-
-  output.on("close", () => {
-    console.log(`ZIP file ${outputZipFile} has been created.`);
-  });
-
-  archive.on("error", (err) => {
-    console.error("Error creating ZIP:", err);
-  });
-
-  archive.pipe(output);
-
-  function addFilesToArchive(archive, sourcePath, entryPath) {
-    const items = fs.readdirSync(sourcePath);
-
-    items.forEach((item) => {
-      const itemPath = path.join(sourcePath, item);
-      const stats = fs.statSync(itemPath);
-      const archiveEntryPath = entryPath ? path.join(entryPath, item) : item;
-
-      if (stats.isDirectory()) {
-        addFilesToArchive(archive, itemPath, archiveEntryPath);
-      } else {
-        archive.file(itemPath, { name: archiveEntryPath });
-      }
-    });
-  }
-
-  addFilesToArchive(archive, sourceFolder);
-
-  archive.finalize();
-}
-
 //http endpoints
+
+//DOWNLOAD ZIP FILES
 app.get("/download-zip", async (req, res) => {
   const zipFilePath = path.join(__dirname, "output.zip");
   const zipFileStream = fs.createReadStream(zipFilePath);
@@ -191,6 +48,7 @@ app.get("/download-zip", async (req, res) => {
   zipFileStream.pipe(res);
 });
 
+//UPLOAD FILES and PROCESS THEM
 app.post("/upload", upload.single("zipFile"), async (req, res) => {
   const uploadedZipFile = req.file;
 
@@ -214,7 +72,7 @@ app.post("/upload", upload.single("zipFile"), async (req, res) => {
     .json({ message: "Zip file uploaded and stored successfully." });
 });
 
-const FORCE_CLEANUP = true; // Set to true to force cleanup even with permission errors
+//CLEANUP FUNCTIONS AND ENDPOINT
 
 app.post("/cleanup", async (req, res) => {
   try {
@@ -255,60 +113,6 @@ app.post("/cleanup", async (req, res) => {
   }
 });
 
-async function fileExists(filePath) {
-  try {
-    await fsPromises.access(filePath);
-    return true;
-  } catch (error) {
-    return false;
-  }
-}
-
-async function directoryExists(dirPath) {
-  try {
-    const stats = await fsPromises.stat(dirPath);
-    return stats.isDirectory();
-  } catch (error) {
-    return false;
-  }
-}
-
-async function deleteFile(filePath) {
-  try {
-    if (FORCE_CLEANUP) {
-      await fsPromises.unlink(filePath);
-    } else {
-      console.log("Permission denied to delete file:", filePath);
-    }
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-async function deleteDirectoryRecursive(directoryPath) {
-  try {
-    const items = await fsPromises.readdir(directoryPath);
-
-    for (const item of items) {
-      const itemPath = path.join(directoryPath, item);
-      const itemStats = await fsPromises.stat(itemPath);
-
-      if (itemStats.isDirectory()) {
-        await deleteDirectoryRecursive(itemPath);
-      } else {
-        await deleteFile(itemPath);
-      }
-    }
-
-    if (FORCE_CLEANUP) {
-      await fsPromises.rmdir(directoryPath);
-    } else {
-      console.log("Permission denied to delete directory:", directoryPath);
-    }
-  } catch (error) {
-    console.log(error.message);
-  }
-}
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

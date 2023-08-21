@@ -1,8 +1,8 @@
 const path = require("path");
-const sharp = require("sharp");
 const fs = require("fs");
+const sharp = require("sharp");
 
-// Function to compress and resize an image while maintaining aspect ratio
+//Compression Script
 const compressAndResizeImage = async (inputPath, outputPath, maxWidth) => {
   try {
     // Read the input image file
@@ -87,17 +87,4 @@ const processFilesRecursively = async (
   }
 };
 
-// Specify the input and output directories
-const inputDirectory = "enterInputDirectoryName";
-const outputDirectory = "enterOutputDirectoryName";
-
-// Set the maximum width for resizing
-let maxWidth = 1000; // Adjust as needed
-
-// Ensure the output directory exists
-if (!fs.existsSync(outputDirectory)) {
-  fs.mkdirSync(outputDirectory);
-}
-
-// Process files recursively in the input directory
-processFilesRecursively(inputDirectory, outputDirectory, maxWidth);
+module.exports = { processFilesRecursively };
