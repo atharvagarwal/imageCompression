@@ -11,6 +11,9 @@ app.use(
     origin: "https://image-compression-frontend-nine.vercel.app",
   })
 );
+// Set the appropriate CORS headers for GET and POST methods
+res.header("Access-Control-Allow-Origin", "https://image-compression-frontend-nine.vercel.app");
+res.header("Access-Control-Allow-Methods", "GET, POST");
 //middlewares or custom script/function imports
 const { archiveFile, extractZipFile } = require("./middlewares/zip.js");
 const { processFilesRecursively } = require("./middlewares/compression.js");
