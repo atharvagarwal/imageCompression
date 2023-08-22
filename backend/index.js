@@ -5,7 +5,10 @@ const app = express();
 const path = require("path");
 const cors = require("cors");
 const fs = require("fs");
-app.use(cors());
+app.use(cors({
+  origin:"*",
+  credentials:false
+}));
 
 
 
