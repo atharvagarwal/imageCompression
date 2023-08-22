@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import JSZip from "jszip";
 import throttle from "lodash.throttle";
-import axios from "axios";
 export default function App() {
   const inputRef = useRef(null);
   const [progress, setProgress] = useState(-1);
@@ -21,7 +20,7 @@ export default function App() {
     }
   };
   const throttledZipUpdate = throttle(onZipUpdate, 50);
-
+  //it is used to initiate the zip file and send it to the server;
   const onZipAndSend = async () => {
     const zip = new JSZip();
     const files = Array.from(inputRef.current.files);
@@ -35,27 +34,20 @@ export default function App() {
         { type: "blob" },
         throttledZipUpdate
       );
-
       const formData = new FormData();
       formData.append("zipFile", zipContent, "images.zip");
 
-      const config = {
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          throttledZipUpdate({ percent: percentCompleted });
+      const response = await fetch("https://image-compression-l7vd.vercel.app/upload", {
+        method: "POST",
+        headers: {
+          "Access-Control-Allow-Origin": "https://image-compression-frontend-nine.vercel.app"
         },
-      };
+        body: formData,
+      });
 
-      const response = await axios.post(
-        "https://image-compression-l7vd.vercel.app/upload",
-        formData,
-        config
-      );
-
-      if (response.status === 200) {
-        alert("Files uploaded");
+      if (response.ok) {
+        const data = await response.json();
+        alert("files Uploaded");
         useDownload(true);
       } else {
         console.error("Error sending zip file to the backend.");
@@ -65,33 +57,39 @@ export default function App() {
     }
   };
 
+  //every time we refresh the page it tends to clean up the dirty files present on the backend.
   const handleCleanup = async () => {
     try {
-      const response = await axios.post(
-        "https://image-compression-l7vd.vercel.app/cleanup"
-      );
+      // Send a POST request to initiate cleanup
+      const response = await fetch("https://image-compression-l7vd.vercel.app/cleanup", {
+        method: "POST",
+        headers: {
+          "Access-Control-Allow-Origin": "https://image-compression-frontend-nine.vercel.app"
+        }
+      });
 
-      if (response.status === 200) {
-        console.log("Cleanup completed successfully.");
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data);
       } else {
-        console.log("Cleanup failed.");
+        console.log("not cleaned");
       }
     } catch (error) {
       console.error("An error occurred:", error);
     }
   };
-
+  //once our files are processed we can download it using this function.
   const handleDownload = async () => {
     try {
-      const response = await axios.get(
-        "https://image-compression-l7vd.vercel.app/download-zip",
-        {
-          responseType: "blob",
+      const response = await fetch("https://image-compression-l7vd.vercel.app/download-zip", {
+        method: "GET",
+        headers: {
+          "Access-Control-Allow-Origin": "https://image-compression-frontend-nine.vercel.app"
         }
-      );
+      });
 
-      if (response.status === 200) {
-        const blob = response.data;
+      if (response.ok) {
+        const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -107,7 +105,6 @@ export default function App() {
       console.error("Error downloading ZIP file:", error);
     }
   };
-
 
   return (
     <div className="App">
