@@ -6,7 +6,7 @@ const path = require("path");
 const cors = require("cors");
 const fs = require("fs");
 app.use(cors({
-  origin:"*",
+  origin:"https://image-compression-frontend-nine.vercel.app/",
   credentials:false
 }));
 
