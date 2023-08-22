@@ -39,10 +39,7 @@ export default function App() {
 
       const response = await fetch("https://image-compression-l7vd.vercel.app/upload", {
         method: "POST",
-        headers: {
-          "Access-Control-Allow-Origin": "https://image-compression-frontend-nine.vercel.app"
-        },
-        body: formData,
+        body: formData
       });
 
       if (response.ok) {
@@ -63,9 +60,6 @@ export default function App() {
       // Send a POST request to initiate cleanup
       const response = await fetch("https://image-compression-l7vd.vercel.app/cleanup", {
         method: "POST",
-        headers: {
-          "Access-Control-Allow-Origin": "https://image-compression-frontend-nine.vercel.app"
-        }
       });
 
       if (response.ok) {
@@ -83,9 +77,6 @@ export default function App() {
     try {
       const response = await fetch("https://image-compression-l7vd.vercel.app/download-zip", {
         method: "GET",
-        headers: {
-          "Access-Control-Allow-Origin": "https://image-compression-frontend-nine.vercel.app"
-        }
       });
 
       if (response.ok) {
