@@ -7,10 +7,10 @@
       }
     ],
     "routes": [
-      { "src": "/download-zip", "dest": "/index.js" },
-      { "src": "/upload", "dest": "/index.js" },
-      { "src": "/cleanup", "dest": "/index.js" },
-      { "src": "/", "dest": "/index.js" }
+      { "src": "/download-zip", "dest": "./index.js" },
+      { "src": "/upload", "dest": "./index.js" },
+      { "src": "/cleanup", "dest": "./index.js" },
+      { "src": "/", "dest": "./index.js" }
 
     ]
   }

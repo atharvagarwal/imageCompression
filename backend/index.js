@@ -30,10 +30,7 @@ const outputDirectory = "outputDirectory";
 // Set the maximum width for resizing
 let maxWidth = 1000; // Adjust as needed
 
-// Ensure the output directory exists
-if (!fs.existsSync(outputDirectory)) {
-  fs.mkdirSync(outputDirectory);
-}
+
 
 //http endpoints
 
@@ -50,6 +47,9 @@ app.get("/download-zip", async (req, res) => {
 
 //UPLOAD FILES and PROCESS THEM
 app.post("/upload", upload.single("zipFile"), async (req, res) => {
+  if (!fs.existsSync(outputDirectory)) {
+    fs.mkdirSync(outputDirectory);
+  }
   const uploadedZipFile = req.file;
 
   if (!uploadedZipFile) {
