@@ -1,12 +1,16 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+// vite.config.js
+import { defineConfig } from 'vite';
+import { createProxy } from 'vite-plugin-proxy';
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  server:{
-    proxy:{
-      '/':"https://image-compression-l7vd.vercel.app"
-    }
-  },
-  plugins: [react()],
-})
+  plugins: [createProxy({
+    // Proxy configuration
+    '/api': {
+      target: 'https://image-compression-l7vd.vercel.app',
+      changeOrigin: true,
+      secure: false, // If the target is an HTTPS URL
+      rewrite: (path) => path.replace(/^\/api/, ''),
+    },
+  })],
+});
+
