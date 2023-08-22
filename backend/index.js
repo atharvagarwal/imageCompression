@@ -9,6 +9,7 @@ const fs = require("fs");
 app.use(
   cors({
     origin: "https://image-compression-frontend-nine.vercel.app",
+    methods: ["GET", "POST"],
   })
 );
 
