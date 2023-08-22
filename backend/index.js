@@ -5,10 +5,14 @@ const app = express();
 const path = require("path");
 const cors = require("cors");
 const fs = require("fs");
-app.use(cors({
-  origin:"https://image-compression-frontend-nine.vercel.app",
-  credentials:true
-}));
+
+app.use(
+  cors({
+    origin: "*",
+    methods: "GET,POST,PUT,DELETE",
+    credentials: true,
+  })
+);
 
 
 
