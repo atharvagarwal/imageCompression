@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   server:{
     proxy:{
-      '/':"https://image-compression-l7vd.vercel.app/"
+      '/':"https://image-compression-l7vd.vercel.app"
     }
   },
   plugins: [react()],

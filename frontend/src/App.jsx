@@ -37,7 +37,7 @@ export default function App() {
       const formData = new FormData();
       formData.append("zipFile", zipContent, "images.zip");
 
-      const response = await fetch("https://image-compression-l7vd.vercel.app/upload", {
+      const response = await fetch("/upload", {
         method: "POST",
         body: formData
       });
@@ -58,7 +58,7 @@ export default function App() {
   const handleCleanup = async () => {
     try {
       // Send a POST request to initiate cleanup
-      const response = await fetch("https://image-compression-l7vd.vercel.app/cleanup", {
+      const response = await fetch("/cleanup", {
         method: "POST",
       });
 
@@ -75,7 +75,7 @@ export default function App() {
   //once our files are processed we can download it using this function.
   const handleDownload = async () => {
     try {
-      const response = await fetch("https://image-compression-l7vd.vercel.app/download-zip", {
+      const response = await fetch("/download-zip", {
         method: "GET",
       });
 
