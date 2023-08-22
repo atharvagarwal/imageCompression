@@ -38,7 +38,7 @@ if (!fs.existsSync(outputDirectory)) {
 //http endpoints
 
 //DOWNLOAD ZIP FILES
-app.get("/api/download-zip", async (req, res) => {
+app.get("/download-zip", async (req, res) => {
   const zipFilePath = path.join(__dirname, "output.zip");
   const zipFileStream = fs.createReadStream(zipFilePath);
 
@@ -49,7 +49,7 @@ app.get("/api/download-zip", async (req, res) => {
 });
 
 //UPLOAD FILES and PROCESS THEM
-app.post("/api/upload", upload.single("zipFile"), async (req, res) => {
+app.post("/upload", upload.single("zipFile"), async (req, res) => {
   const uploadedZipFile = req.file;
 
   if (!uploadedZipFile) {
@@ -74,7 +74,7 @@ app.post("/api/upload", upload.single("zipFile"), async (req, res) => {
 
 //CLEANUP FUNCTIONS AND ENDPOINT
 
-app.post("/api/cleanup", async (req, res) => {
+app.post("/cleanup", async (req, res) => {
   try {
     const cleanupTasks = [];
 
@@ -116,8 +116,6 @@ app.post("/api/cleanup", async (req, res) => {
 app.get('/',(req, res) => {
   res.send("Image Compression System Backend");
 })
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+
 
 module.exports = app;

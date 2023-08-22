@@ -2,19 +2,16 @@
     "version": 2,
     "builds": [
       {
-        "src": "vercel-entry.js",
+        "src": "index.js",
         "use": "@vercel/node"
       }
     ],
     "routes": [
-      {
-        "src": "/api/(.*)",
-        "dest": "/vercel-entry.js"
-      },
-      {
-        "src": "/(.*)",
-        "dest": "/vercel-entry.js"
-      }
+      { "src": "/download-zip", "dest": "/index.js" },
+      { "src": "/upload", "dest": "/index.js" },
+      { "src": "/cleanup", "dest": "/index.js" },
+      { "src": "/", "dest": "/index.js" }
+
     ]
   }
   
