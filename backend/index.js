@@ -6,12 +6,9 @@ const path = require("path");
 const cors = require("cors");
 const fs = require("fs");
 
-app.use(
-  cors({
-    origin: "https://image-compression-frontend-nine.vercel.app",
-    methods: ["GET", "POST"],
-  })
-);
+
+
+
 
 const allowCors = fn => async (req, res) => {
   res.setHeader('Access-Control-Allow-Credentials', true)
@@ -29,7 +26,7 @@ const allowCors = fn => async (req, res) => {
   }
   return await fn(req, res)
 }
-
+app.use(allowCors);
 
 
 //middlewares or custom script/function imports
@@ -62,7 +59,6 @@ let maxWidth = 1000; // Adjust as needed
 
 //DOWNLOAD ZIP FILES
 app.get("/download-zip", async (req, res) => {
-  allowCors();
   const zipFilePath = path.join(__dirname, "output.zip");
   const zipFileStream = fs.createReadStream(zipFilePath);
 
@@ -74,7 +70,6 @@ app.get("/download-zip", async (req, res) => {
 
 //UPLOAD FILES and PROCESS THEM
 app.post("/upload", upload.single("zipFile"), async (req, res) => {
-  allowCors();
   if (!fs.existsSync(outputDirectory)) {
     fs.mkdirSync(outputDirectory);
   }
@@ -103,7 +98,6 @@ app.post("/upload", upload.single("zipFile"), async (req, res) => {
 //CLEANUP FUNCTIONS AND ENDPOINT
 
 app.post("/cleanup", async (req, res) => {
-  allowCors();
   try {
     const cleanupTasks = [];
 
