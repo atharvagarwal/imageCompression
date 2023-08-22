@@ -5,7 +5,12 @@ const app = express();
 const path = require("path");
 const cors = require("cors");
 const fs = require("fs");
-const PORT = process.env.PORT || 3000;
+
+app.use(
+  cors({
+    origin: "https://image-compression-frontend-nine.vercel.app",
+  })
+);
 //middlewares or custom script/function imports
 const { archiveFile, extractZipFile } = require("./middlewares/zip.js");
 const { processFilesRecursively } = require("./middlewares/compression.js");
@@ -116,6 +121,7 @@ app.post("/cleanup", async (req, res) => {
 app.get('/',(req, res) => {
   res.send("Image Compression System Backend");
 })
+
 
 
 module.exports = app;
