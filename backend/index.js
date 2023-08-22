@@ -113,6 +113,9 @@ app.post("/cleanup", async (req, res) => {
   }
 });
 
+app.get('/',(req, res) => {
+  res.send("Image Compression System Backend");
+})
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
