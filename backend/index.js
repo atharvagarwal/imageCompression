@@ -13,6 +13,23 @@ app.use(
   })
 );
 
+const allowCors = fn => async (req, res) => {
+  res.setHeader('Access-Control-Allow-Credentials', true)
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  // another common pattern
+  // res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  )
+  if (req.method === 'OPTIONS') {
+    res.status(200).end()
+    return
+  }
+  return await fn(req, res)
+}
+
 
 
 //middlewares or custom script/function imports
@@ -45,6 +62,7 @@ let maxWidth = 1000; // Adjust as needed
 
 //DOWNLOAD ZIP FILES
 app.get("/download-zip", async (req, res) => {
+  allowCors();
   const zipFilePath = path.join(__dirname, "output.zip");
   const zipFileStream = fs.createReadStream(zipFilePath);
 
@@ -56,6 +74,7 @@ app.get("/download-zip", async (req, res) => {
 
 //UPLOAD FILES and PROCESS THEM
 app.post("/upload", upload.single("zipFile"), async (req, res) => {
+  allowCors();
   if (!fs.existsSync(outputDirectory)) {
     fs.mkdirSync(outputDirectory);
   }
@@ -84,6 +103,7 @@ app.post("/upload", upload.single("zipFile"), async (req, res) => {
 //CLEANUP FUNCTIONS AND ENDPOINT
 
 app.post("/cleanup", async (req, res) => {
+  allowCors();
   try {
     const cleanupTasks = [];
 
