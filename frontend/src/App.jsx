@@ -41,9 +41,13 @@ export default function App() {
         method: "POST",
         body: formData,
         credentials: "include",
-      headers: {
-        "Access-Control-Allow-Credentials": true,
-      },
+        headers: {
+          'Accept': "application/json",
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Credentials": true,
+
+        },
+
       });
 
       if (response.ok) {
@@ -65,9 +69,13 @@ export default function App() {
       const response = await fetch("https://image-compression-backend-ten.vercel.app/cleanup", {
         method: "POST",
         credentials: "include",
-      headers: {
-        "Access-Control-Allow-Credentials": true,
-      },
+        headers: {
+          'Accept': "application/json",
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Credentials": true,
+
+        },
+
       });
 
       if (response.ok) {
@@ -86,9 +94,13 @@ export default function App() {
       const response = await fetch("https://image-compression-backend-ten.vercel.app/download-zip", {
         method: "GET",
         credentials: "include",
-      headers: {
-        "Access-Control-Allow-Credentials": true,
-      },
+        headers: {
+          'Accept': "application/json",
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Credentials": true,
+
+        },
+
       });
 
       if (response.ok) {
