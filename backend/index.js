@@ -6,7 +6,12 @@ const path = require("path");
 const cors = require("cors");
 const fs = require("fs");
 
-
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST"],
+  })
+);
 
 
 
