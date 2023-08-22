@@ -5,7 +5,7 @@ const app = express();
 const path = require("path");
 const cors = require("cors");
 const fs = require("fs");
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 //middlewares or custom script/function imports
 const { archiveFile, extractZipFile } = require("./middlewares/zip.js");
 const { processFilesRecursively } = require("./middlewares/compression.js");
