@@ -13,6 +13,13 @@ app.use(
   })
 );
 
+app.options("*", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "https://image-compression-frontend-nine.vercel.app");
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  res.sendStatus(200);
+});
+
 //middlewares or custom script/function imports
 const { archiveFile, extractZipFile } = require("./middlewares/zip.js");
 const { processFilesRecursively } = require("./middlewares/compression.js");
