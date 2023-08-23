@@ -7,10 +7,22 @@
       }
     ],
     "routes": [
-      { "src": "/download-zip", "dest": "./index.js" },
-      { "src": "/upload", "dest": "./index.js" },
-      { "src": "/cleanup", "dest": "./index.js" },
-      { "src": "/", "dest": "./index.js" }
+      { "src": "/download-zip", "dest": "./index.js", "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Origin": "*"
+      } },
+      { "src": "/upload", "dest": "./index.js", "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Origin": "*"
+      } },
+      { "src": "/cleanup", "dest": "./index.js", "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Origin": "*"
+      } },
+      { "src": "/", "dest": "./index.js", "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Origin": "*"
+      } }
 
     ]
   }
