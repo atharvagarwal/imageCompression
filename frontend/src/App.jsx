@@ -52,6 +52,7 @@ export default function App() {
       }
     } catch (error) {
       console.error("Error generating zip or sending to backend:", error);
+      alert(error.message);
     }
   };
 
@@ -73,6 +74,7 @@ export default function App() {
       }
     } catch (error) {
       console.error("An error occurred:", error);
+      alert(error);
     }
   };
   //once our files are processed we can download it using this function.
@@ -98,6 +100,7 @@ export default function App() {
       }
     } catch (error) {
       console.error("Error downloading ZIP file:", error);
+      alert(error);
     }
   };
 
