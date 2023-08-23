@@ -9,19 +9,19 @@
     "routes": [
       { "src": "/download-zip", "dest": "./index.js", "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
       "headers": {
-        "Access-Control-Allow-Origin": "*"
+        "Access-Control-Allow-Origin": "https://image-compression-frontend-753wwasu4-atharvagarwal-s-team.vercel.app"
       } },
       { "src": "/upload", "dest": "./index.js", "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
       "headers": {
-        "Access-Control-Allow-Origin": "*"
+        "Access-Control-Allow-Origin": "https://image-compression-frontend-753wwasu4-atharvagarwal-s-team.vercel.app"
       } },
       { "src": "/cleanup", "dest": "./index.js", "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
       "headers": {
-        "Access-Control-Allow-Origin": "*"
+        "Access-Control-Allow-Origin": "https://image-compression-frontend-753wwasu4-atharvagarwal-s-team.vercel.app"
       } },
       { "src": "/", "dest": "./index.js", "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
       "headers": {
-        "Access-Control-Allow-Origin": "*"
+        "Access-Control-Allow-Origin": "https://image-compression-frontend-753wwasu4-atharvagarwal-s-team.vercel.app"
       } }
 
     ]
